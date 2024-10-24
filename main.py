@@ -77,6 +77,9 @@ class TradutorImagemApp:
             messagebox.showwarning("Aviso", "Por favor, carregue ou cole uma imagem primeiro.")
 
     def extrair_texto(self, imagem):
+        if not os.path.exists(pytesseract.pytesseract.tesseract_cmd):
+            raise FileNotFoundError("O executável do Tesseract não foi encontrado no caminho especificado.")
+        
         texto = pytesseract.image_to_string(imagem)
         return texto.strip()
 
