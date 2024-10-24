@@ -3,8 +3,7 @@ from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk, ImageGrab
 import pytesseract
 from deep_translator import GoogleTranslator
-
-pytesseract.pytesseract.tesseract_cmd = r'/Tesseract-OCR/tesseract.exe'
+import os
 
 class TradutorImagemApp:
     def __init__(self, master):
@@ -12,6 +11,9 @@ class TradutorImagemApp:
         self.master.title("App de Tradução de Imagens")
         self.master.geometry("500x600")
         self.master.config(bg="#2C3E50")
+
+        # Configurando o caminho do Tesseract
+        pytesseract.pytesseract.tesseract_cmd = os.path.join(os.path.dirname(__file__), 'tesseract', 'tesseract.exe')
 
         # Painel para exibir a imagem carregada
         self.painel_imagem = tk.Label(master, bg="#2C3E50")
