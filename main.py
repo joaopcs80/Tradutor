@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image
 import pytesseract
 from googletrans import Translator
 import pyautogui
@@ -12,8 +12,8 @@ class TradutorApp:
         self.label = tk.Label(master, text="Selecione a área da tela")
         self.label.pack()
 
-        self.canvas = tk.Canvas(master, bg='white')
-        self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.canvas = tk.Canvas(master, bg='white', width=800, height=600)
+        self.canvas.pack()
 
         self.canvas.bind("<ButtonPress-1>", self.start_selection)
         self.canvas.bind("<B1-Motion>", self.update_selection)
@@ -45,12 +45,14 @@ class TradutorApp:
         # Extrai texto da imagem recortada
         text = pytesseract.image_to_string(cropped_image)
 
+        # Traduz o texto
         translator = Translator()
         try:
             translation = translator.translate(text, dest='pt').text
         except Exception as e:
             translation = f"Erro na tradução: {e}"
 
+        # Atualiza a label com o texto extraído e sua tradução
         self.label.config(text=f'Texto: {text.strip()}\nTradução: {translation.strip()}')
 
 if __name__ == "__main__":
