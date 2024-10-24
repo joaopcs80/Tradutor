@@ -2,47 +2,32 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 import pytesseract
-from googletrans import Translator
-
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+import googletrans
 
 class TradutorApp:
     def __init__(self, master):
         self.master = master
-        self.master.title("App de Tradução de Imagens")
-        self.master.geometry("500x600")
+        self.master.title("Tradutor de Imagens")
 
-        self.botao_carregar = tk.Button(master, text="Carregar Imagem", command=self.abrir_imagem)
-        self.botao_carregar.pack(pady=10)
-
-        self.painel_imagem = tk.Label(master)
-        self.painel_imagem.pack()
-
-        self.resultado_traducao = tk.Label(master, text="", wraplength=400, justify="left")
-        self.resultado_traducao.pack(pady=20)
+        self.label = tk.Label(master, text="Pressione 'S' para selecionar a área")
+        self.label.pack()
 
         self.canvas = tk.Canvas(master, bg='white')
         self.canvas.pack(fill=tk.BOTH, expand=True)
+
+        self.canvas.bind("<ButtonPress-1>", self.start_selection)
+        self.canvas.bind("<B1-Motion>", self.update_selection)
+        self.canvas.bind("<ButtonRelease-1>", self.end_selection)
+        self.master.bind("<s>", self.activate_selection_mode)
 
         self.image = None
         self.rect = None
         self.start_x = None
         self.start_y = None
 
+    def activate_selection_mode(self, event):
+        self.label.config(text="Selecione a área com o mouse")
         self.canvas.bind("<ButtonPress-1>", self.start_selection)
-        self.canvas.bind("<B1-Motion>", self.update_selection)
-        self.canvas.bind("<ButtonRelease-1>", self.end_selection)
-
-    def abrir_imagem(self):
-        caminho_imagem = filedialog.askopenfilename()
-        if caminho_imagem:
-            self.image = Image.open(caminho_imagem)
-            self.image.thumbnail((400, 400))
-            img_exibida = ImageTk.PhotoImage(self.image)
-            self.painel_imagem.config(image=img_exibida)
-            self.painel_imagem.image = img_exibida
-            self.canvas.delete("all")  # Limpa o canvas antes de carregar a nova imagem
-            self.canvas.create_image(0, 0, anchor=tk.NW, image=img_exibida)
 
     def start_selection(self, event):
         self.start_x = event.x
@@ -54,24 +39,26 @@ class TradutorApp:
 
     def end_selection(self, event):
         end_x, end_y = event.x, event.y
+        self.canvas.unbind("<ButtonPress-1>")
         self.extract_text_from_selection(self.start_x, self.start_y, end_x, end_y)
 
+    def load_image(self, file_path):
+        self.image = Image.open(file_path)
+        self.image.thumbnail((800, 600))  # Reduz o tamanho da imagem
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
+
     def extract_text_from_selection(self, x1, y1, x2, y2):
-        cropped_image = self.image.crop((x1 * (self.image.width / 400), y1 * (self.image.height / 400),
-                                          x2 * (self.image.width / 400), y2 * (self.image.height / 400)))
-        texto_extraido = pytesseract.image_to_string(cropped_image)
-        texto_traduzido = self.traduzir_texto(texto_extraido)
-        self.resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
+        cropped_image = self.image.crop((x1, y1, x2, y2))
+        text = pytesseract.image_to_string(cropped_image)
 
-    def traduzir_texto(self, texto):
-        if texto.strip():  # Verifica se o texto não está vazio
-            tradutor = Translator()
-            traducao = tradutor.translate(texto, dest='pt')
-            return traducao.text
-        return "Nenhum texto para traduzir."
+        translator = googletrans.Translator()
+        translation = translator.translate(text, dest='pt').text
 
-# Inicializa a aplicação
+        self.label.config(text=f'Texto: {text}\nTradução: {translation}')
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = TradutorApp(root)
+    app.load_image('caminho_para_sua_imagem.png')  # Altere para o caminho da sua imagem
     root.mainloop()
