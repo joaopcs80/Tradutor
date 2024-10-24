@@ -87,7 +87,7 @@ class TradutorImagemApp:
         self.imagem_atual = None
         self.resultado_traducao.config(text="")
 
-# Configuração da janela principal
+# Configuração da janela sda
 if __name__ == "__main__":
     root = tk.Tk()
     app = TradutorImagemApp(root)
