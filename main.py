@@ -13,7 +13,7 @@ class TradutorImagemApp:
         self.master.config(bg="#2C3E50")
 
         # Configurando o caminho do Tesseract
-        pytesseract.pytesseract.tesseract_cmd = os.path.join(os.path.dirname(__file__), 'tesseract', 'tesseract.exe')
+        pytesseract.pytesseract.tesseract_cmd = os.path.join(os.path.dirname(__file__), 'Tesseract-OCR', 'tesseract.exe')
 
         # Painel para exibir a imagem carregada
         self.painel_imagem = tk.Label(master, bg="#2C3E50")
@@ -77,8 +77,8 @@ class TradutorImagemApp:
             messagebox.showwarning("Aviso", "Por favor, carregue ou cole uma imagem primeiro.")
 
     def extrair_texto(self, imagem):
-        if not os.path.exists(pytesseract.pytesseract.tesseract_cmd):
-            raise FileNotFoundError("O executável do Tesseract não foi encontrado no caminho especificado.")
+        # if not os.path.exists(pytesseract.pytesseract.tesseract_cmd):
+        #     raise FileNotFoundError("O executável do Tesseract não foi encontrado no caminho especificado.")
         
         texto = pytesseract.image_to_string(imagem)
         return texto.strip()
