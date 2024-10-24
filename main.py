@@ -4,6 +4,8 @@ from PIL import Image, ImageTk, ImageGrab
 import pytesseract
 from deep_translator import GoogleTranslator
 
+pytesseract.pytesseract.tesseract_cmd = r'/Tesseract-OCR/tesseract.exe'
+
 class TradutorImagemApp:
     def __init__(self, master):
         self.master = master
