@@ -11,19 +11,19 @@ def abrir_imagem():
         processar_imagem(caminho_imagem)
 
 # Função para processar a imagem
-def processar_imagem(caminho_imagem):
-    imagem = Image.open(caminho_imagem)
+def processar_imagem(imagem):
+    if isinstance(imagem, str):  # Se a imagem é um caminho de arquivo
+        imagem = Image.open(imagem)
     imagem.thumbnail((400, 400))
     img_exibida = ImageTk.PhotoImage(imagem)
     painel_imagem.config(image=img_exibida)
     painel_imagem.image = img_exibida
-    texto_extraido = extrair_texto(caminho_imagem)
+    texto_extraido = extrair_texto(imagem)
     texto_traduzido = traduzir_texto(texto_extraido)
     resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
 
 # Função para extrair texto da imagem
-def extrair_texto(caminho_imagem):
-    imagem = Image.open(caminho_imagem)
+def extrair_texto(imagem):
     texto = pytesseract.image_to_string(imagem)
     return texto
 
