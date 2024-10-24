@@ -1,10 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageGrab
 import pytesseract
 from googletrans import Translator
-import io
-import win32clipboard  # Certifique-se de ter a biblioteca `pywin32` instalada
 
 # Função para abrir a imagem
 def abrir_imagem():
@@ -37,14 +35,11 @@ def traduzir_texto(texto):
 
 # Função para colar imagem da área de transferência
 def colar_imagem():
-    win32clipboard.OpenClipboard()
-    try:
-        if win32clipboard.IsClipboardFormatAvailable(win32clipboard.CF_BITMAP):
-            imagem_clipboard = win32clipboard.GetClipboardData(win32clipboard.CF_BITMAP)
-            imagem = Image.open(io.BytesIO(imagem_clipboard))
-            processar_imagem(imagem)
-    finally:
-        win32clipboard.CloseClipboard()
+    imagem = ImageGrab.grabclipboard()
+    if isinstance(imagem, Image.Image):  # Verifica se a imagem foi obtida
+        processar_imagem(imagem)
+    else:
+        resultado_traducao.config(text="Nenhuma imagem disponível na área de transferência.")
 
 # Configuração da janela principal
 janela = tk.Tk()
