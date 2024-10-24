@@ -9,22 +9,27 @@ class TradutorImagemApp:
         self.master = master
         self.master.title("App de Tradução de Imagens")
         self.master.geometry("500x600")
+        self.master.config(bg="#2C3E50")
 
         # Painel para exibir a imagem carregada
-        self.painel_imagem = tk.Label(master)
+        self.painel_imagem = tk.Label(master, bg="#2C3E50")
         self.painel_imagem.pack(pady=10)
 
         # Label para exibir a tradução
-        self.resultado_traducao = tk.Label(master, text="", wraplength=400, justify="left", font=("Arial", 12), bg="lightyellow", relief="sunken", borderwidth=2)
+        self.resultado_traducao = tk.Label(master, text="", wraplength=400, justify="left", font=("Arial", 12), bg="#ECF0F1", relief="sunken", borderwidth=2)
         self.resultado_traducao.pack(pady=20, padx=10)
 
+        # Frame para os botões
+        self.frame_botoes = tk.Frame(master, bg="#2C3E50")
+        self.frame_botoes.pack(pady=10)
+
         # Botão para carregar imagem
-        botao_carregar = tk.Button(master, text="Carregar Imagem", command=self.abrir_imagem)
-        botao_carregar.pack(pady=10)
+        botao_carregar = tk.Button(self.frame_botoes, text="Carregar Imagem", command=self.abrir_imagem, bg="#3498DB", fg="white", font=("Arial", 10))
+        botao_carregar.grid(row=0, column=0, padx=5)
 
         # Botão para traduzir a imagem
-        botao_traduzir = tk.Button(master, text="Traduzir Imagem", command=self.traduzir_imagem)
-        botao_traduzir.pack(pady=10)
+        botao_traduzir = tk.Button(self.frame_botoes, text="Traduzir Imagem", command=self.traduzir_imagem, bg="#2ECC71", fg="white", font=("Arial", 10))
+        botao_traduzir.grid(row=0, column=1, padx=5)
 
         # Variável para armazenar a imagem atual
         self.imagem_atual = None
@@ -49,18 +54,16 @@ class TradutorImagemApp:
     def processar_imagem(self, imagem):
         if isinstance(imagem, str):
             imagem = Image.open(imagem)
-        # Converte a imagem para um formato que pytesseract consegue processar
         imagem = imagem.convert("RGB")
         imagem.thumbnail((400, 400))
         img_exibida = ImageTk.PhotoImage(imagem)
         self.painel_imagem.config(image=img_exibida)
         self.painel_imagem.image = img_exibida
-        self.imagem_atual = imagem  # Armazena a imagem atual
+        self.imagem_atual = imagem
 
     def traduzir_imagem(self):
         if self.imagem_atual is not None:
             texto_extraido = self.extrair_texto(self.imagem_atual)
-            print(f"Texto Extraído: {texto_extraido}")  # Para depuração
             if texto_extraido:
                 texto_traduzido = self.traduzir_texto(texto_extraido)
                 self.resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
@@ -71,7 +74,7 @@ class TradutorImagemApp:
 
     def extrair_texto(self, imagem):
         texto = pytesseract.image_to_string(imagem)
-        return texto.strip()  # Remove espaços em branco desnecessários
+        return texto.strip()
 
     def traduzir_texto(self, texto):
         tradutor = Translator()
@@ -87,7 +90,7 @@ class TradutorImagemApp:
         self.imagem_atual = None
         self.resultado_traducao.config(text="")
 
-# Configuração da janela sda
+# Configuração da janela
 if __name__ == "__main__":
     root = tk.Tk()
     app = TradutorImagemApp(root)
