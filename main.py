@@ -3,19 +3,25 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 import pytesseract
 from googletrans import Translator
+import io
+import win32clipboard  # Certifique-se de ter a biblioteca `pywin32` instalada
 
 # Função para abrir a imagem
 def abrir_imagem():
     caminho_imagem = filedialog.askopenfilename()
     if caminho_imagem:
-        imagem = Image.open(caminho_imagem)
-        imagem.thumbnail((400, 400))
-        img_exibida = ImageTk.PhotoImage(imagem)
-        painel_imagem.config(image=img_exibida)
-        painel_imagem.image = img_exibida
-        texto_extraido = extrair_texto(caminho_imagem)
-        texto_traduzido = traduzir_texto(texto_extraido)
-        resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
+        processar_imagem(caminho_imagem)
+
+# Função para processar a imagem
+def processar_imagem(caminho_imagem):
+    imagem = Image.open(caminho_imagem)
+    imagem.thumbnail((400, 400))
+    img_exibida = ImageTk.PhotoImage(imagem)
+    painel_imagem.config(image=img_exibida)
+    painel_imagem.image = img_exibida
+    texto_extraido = extrair_texto(caminho_imagem)
+    texto_traduzido = traduzir_texto(texto_extraido)
+    resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
 
 # Função para extrair texto da imagem
 def extrair_texto(caminho_imagem):
@@ -29,6 +35,17 @@ def traduzir_texto(texto):
     traducao = tradutor.translate(texto, dest='pt')
     return traducao.text
 
+# Função para colar imagem da área de transferência
+def colar_imagem():
+    win32clipboard.OpenClipboard()
+    try:
+        if win32clipboard.IsClipboardFormatAvailable(win32clipboard.CF_BITMAP):
+            imagem_clipboard = win32clipboard.GetClipboardData(win32clipboard.CF_BITMAP)
+            imagem = Image.open(io.BytesIO(imagem_clipboard))
+            processar_imagem(imagem)
+    finally:
+        win32clipboard.CloseClipboard()
+
 # Configuração da janela principal
 janela = tk.Tk()
 janela.title("App de Tradução de Imagens")
@@ -37,6 +54,10 @@ janela.geometry("500x600")
 # Botão para carregar imagem
 botao_carregar = tk.Button(janela, text="Carregar Imagem", command=abrir_imagem)
 botao_carregar.pack(pady=10)
+
+# Botão para colar imagem da área de transferência
+botao_colar = tk.Button(janela, text="Colar Imagem (CTRL+V)", command=colar_imagem)
+botao_colar.pack(pady=10)
 
 # Painel para exibir a imagem carregada
 painel_imagem = tk.Label(janela)
