@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk, ImageGrab
 import pytesseract
 from googletrans import Translator
+import io
 
 class TradutorImagemApp:
     def __init__(self, master):
@@ -51,6 +52,8 @@ class TradutorImagemApp:
     def processar_imagem(self, imagem):
         if isinstance(imagem, str):
             imagem = Image.open(imagem)
+        # Converte a imagem para um formato que pytesseract consegue processar
+        imagem = imagem.convert("RGB")
         imagem.thumbnail((400, 400))
         img_exibida = ImageTk.PhotoImage(imagem)
         self.painel_imagem.config(image=img_exibida)
