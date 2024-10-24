@@ -19,13 +19,17 @@ def processar_imagem(imagem):
     painel_imagem.config(image=img_exibida)
     painel_imagem.image = img_exibida
     texto_extraido = extrair_texto(imagem)
-    texto_traduzido = traduzir_texto(texto_extraido)
-    resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
+    print(f"Texto Extraído: {texto_extraido}")  # Para depuração
+    if texto_extraido:  # Verifica se o texto foi extraído com sucesso
+        texto_traduzido = traduzir_texto(texto_extraido)
+        resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
+    else:
+        resultado_traducao.config(text="Nenhum texto foi extraído da imagem.")
 
 # Função para extrair texto da imagem
 def extrair_texto(imagem):
     texto = pytesseract.image_to_string(imagem)
-    return texto
+    return texto.strip()  # Remove espaços em branco desnecessários
 
 # Função para traduzir o texto para português
 def traduzir_texto(texto):
@@ -61,6 +65,13 @@ painel_imagem.pack()
 # Label para exibir a tradução
 resultado_traducao = tk.Label(janela, text="", wraplength=400, justify="left")
 resultado_traducao.pack(pady=20)
+
+# Função para ligar o atalho CTRL + V
+def atalho_colar(event):
+    colar_imagem()
+
+# Bind do atalho CTRL + V
+janela.bind('<Control-v>', atalho_colar)
 
 # Inicia o loop da interface gráfica
 janela.mainloop()
