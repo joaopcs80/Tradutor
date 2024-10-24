@@ -4,6 +4,8 @@ from PIL import Image, ImageTk
 import pytesseract
 from googletrans import Translator
 
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
 # Função para abrir a imagem
 def abrir_imagem():
     caminho_imagem = filedialog.askopenfilename()
