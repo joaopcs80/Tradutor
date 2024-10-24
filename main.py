@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk, ImageGrab
 import pytesseract
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 class TradutorImagemApp:
     def __init__(self, master):
@@ -77,9 +77,12 @@ class TradutorImagemApp:
         return texto.strip()
 
     def traduzir_texto(self, texto):
-        tradutor = Translator()
-        traducao = tradutor.translate(texto, dest='pt')
-        return traducao.text
+        try:
+            traducao = GoogleTranslator(source='auto', target='pt').translate(texto)
+            return traducao
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro na tradução: {e}")
+            return "Erro na tradução"
 
     def atalho_colar(self, event):
         self.colar_imagem()
