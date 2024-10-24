@@ -1,77 +1,88 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk, ImageGrab
 import pytesseract
 from googletrans import Translator
 
-# Função para abrir a imagem
-def abrir_imagem():
-    caminho_imagem = filedialog.askopenfilename()
-    if caminho_imagem:
-        processar_imagem(caminho_imagem)
+class TradutorImagemApp:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("App de Tradução de Imagens")
+        self.master.geometry("500x600")
 
-# Função para processar a imagem
-def processar_imagem(imagem):
-    if isinstance(imagem, str):  # Se a imagem é um caminho de arquivo
-        imagem = Image.open(imagem)
-    imagem.thumbnail((400, 400))
-    img_exibida = ImageTk.PhotoImage(imagem)
-    painel_imagem.config(image=img_exibida)
-    painel_imagem.image = img_exibida
-    texto_extraido = extrair_texto(imagem)
-    print(f"Texto Extraído: {texto_extraido}")  # Para depuração
-    if texto_extraido:  # Verifica se o texto foi extraído com sucesso
-        texto_traduzido = traduzir_texto(texto_extraido)
-        resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
-    else:
-        resultado_traducao.config(text="Nenhum texto foi extraído da imagem.")
+        # Painel para exibir a imagem carregada
+        self.painel_imagem = tk.Label(master)
+        self.painel_imagem.pack(pady=10)
 
-# Função para extrair texto da imagem
-def extrair_texto(imagem):
-    texto = pytesseract.image_to_string(imagem)
-    return texto.strip()  # Remove espaços em branco desnecessários
+        # Label para exibir a tradução
+        self.resultado_traducao = tk.Label(master, text="", wraplength=400, justify="left", font=("Arial", 12), bg="lightyellow", relief="sunken", borderwidth=2)
+        self.resultado_traducao.pack(pady=20, padx=10)
 
-# Função para traduzir o texto para português
-def traduzir_texto(texto):
-    tradutor = Translator()
-    traducao = tradutor.translate(texto, dest='pt')
-    return traducao.text
+        # Botão para carregar imagem
+        botao_carregar = tk.Button(master, text="Carregar Imagem", command=self.abrir_imagem)
+        botao_carregar.pack(pady=10)
 
-# Função para colar imagem da área de transferência
-def colar_imagem():
-    imagem = ImageGrab.grabclipboard()
-    if isinstance(imagem, Image.Image):  # Verifica se a imagem foi obtida
-        processar_imagem(imagem)
-    else:
-        resultado_traducao.config(text="Nenhuma imagem disponível na área de transferência.")
+        # Botão para colar imagem da área de transferência
+        botao_colar = tk.Button(master, text="Colar Imagem (CTRL+V)", command=self.colar_imagem)
+        botao_colar.pack(pady=10)
+
+        # Botão para traduzir a imagem
+        botao_traduzir = tk.Button(master, text="Traduzir Imagem", command=self.traduzir_imagem)
+        botao_traduzir.pack(pady=10)
+
+        # Variável para armazenar a imagem atual
+        self.imagem_atual = None
+
+        # Bind do atalho CTRL + V
+        self.master.bind('<Control-v>', self.atalho_colar)
+
+    def abrir_imagem(self):
+        caminho_imagem = filedialog.askopenfilename()
+        if caminho_imagem:
+            self.processar_imagem(caminho_imagem)
+
+    def colar_imagem(self):
+        imagem = ImageGrab.grabclipboard()
+        if isinstance(imagem, Image.Image):
+            self.processar_imagem(imagem)
+        else:
+            messagebox.showerror("Erro", "Nenhuma imagem disponível na área de transferência.")
+
+    def processar_imagem(self, imagem):
+        if isinstance(imagem, str):
+            imagem = Image.open(imagem)
+        imagem.thumbnail((400, 400))
+        img_exibida = ImageTk.PhotoImage(imagem)
+        self.painel_imagem.config(image=img_exibida)
+        self.painel_imagem.image = img_exibida
+        self.imagem_atual = imagem  # Armazena a imagem atual
+
+    def traduzir_imagem(self):
+        if self.imagem_atual is not None:
+            texto_extraido = self.extrair_texto(self.imagem_atual)
+            print(f"Texto Extraído: {texto_extraido}")  # Para depuração
+            if texto_extraido:
+                texto_traduzido = self.traduzir_texto(texto_extraido)
+                self.resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
+            else:
+                self.resultado_traducao.config(text="Nenhum texto foi extraído da imagem.")
+        else:
+            messagebox.showwarning("Aviso", "Por favor, carregue ou cole uma imagem primeiro.")
+
+    def extrair_texto(self, imagem):
+        texto = pytesseract.image_to_string(imagem)
+        return texto.strip()  # Remove espaços em branco desnecessários
+
+    def traduzir_texto(self, texto):
+        tradutor = Translator()
+        traducao = tradutor.translate(texto, dest='pt')
+        return traducao.text
+
+    def atalho_colar(self, event):
+        self.colar_imagem()
 
 # Configuração da janela principal
-janela = tk.Tk()
-janela.title("App de Tradução de Imagens")
-janela.geometry("500x600")
-
-# Botão para carregar imagem
-botao_carregar = tk.Button(janela, text="Carregar Imagem", command=abrir_imagem)
-botao_carregar.pack(pady=10)
-
-# Botão para colar imagem da área de transferência
-botao_colar = tk.Button(janela, text="Colar Imagem (CTRL+V)", command=colar_imagem)
-botao_colar.pack(pady=10)
-
-# Painel para exibir a imagem carregada
-painel_imagem = tk.Label(janela)
-painel_imagem.pack()
-
-# Label para exibir a tradução
-resultado_traducao = tk.Label(janela, text="", wraplength=400, justify="left")
-resultado_traducao.pack(pady=20)
-
-# Função para ligar o atalho CTRL + V
-def atalho_colar(event):
-    colar_imagem()
-
-# Bind do atalho CTRL + V
-janela.bind('<Control-v>', atalho_colar)
-
-# Inicia o loop da interface gráfica
-janela.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TradutorImagemApp(root)
+    root.mainloop()
