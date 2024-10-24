@@ -3,7 +3,6 @@ from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk, ImageGrab
 import pytesseract
 from googletrans import Translator
-import io
 
 class TradutorImagemApp:
     def __init__(self, master):
@@ -23,10 +22,6 @@ class TradutorImagemApp:
         botao_carregar = tk.Button(master, text="Carregar Imagem", command=self.abrir_imagem)
         botao_carregar.pack(pady=10)
 
-        # Botão para colar imagem da área de transferência
-        botao_colar = tk.Button(master, text="Colar Imagem (CTRL+V)", command=self.colar_imagem)
-        botao_colar.pack(pady=10)
-
         # Botão para traduzir a imagem
         botao_traduzir = tk.Button(master, text="Traduzir Imagem", command=self.traduzir_imagem)
         botao_traduzir.pack(pady=10)
@@ -36,6 +31,8 @@ class TradutorImagemApp:
 
         # Bind do atalho CTRL + V
         self.master.bind('<Control-v>', self.atalho_colar)
+        # Bind do atalho CTRL + Z para limpar a tela
+        self.master.bind('<Control-z>', self.limpar_tela)
 
     def abrir_imagem(self):
         caminho_imagem = filedialog.askopenfilename()
@@ -83,6 +80,12 @@ class TradutorImagemApp:
 
     def atalho_colar(self, event):
         self.colar_imagem()
+
+    def limpar_tela(self, event):
+        self.painel_imagem.config(image=None)
+        self.painel_imagem.image = None
+        self.imagem_atual = None
+        self.resultado_traducao.config(text="")
 
 # Configuração da janela principal
 if __name__ == "__main__":
