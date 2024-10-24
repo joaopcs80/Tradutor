@@ -1,61 +1,50 @@
 import tkinter as tk
-from PIL import Image
+from tkinter import filedialog
+from PIL import Image, ImageTk
 import pytesseract
 from googletrans import Translator
-import pyautogui
 
-class TradutorApp:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Tradutor de Captura de Tela")
+# Função para abrir a imagem
+def abrir_imagem():
+    caminho_imagem = filedialog.askopenfilename()
+    if caminho_imagem:
+        imagem = Image.open(caminho_imagem)
+        imagem.thumbnail((400, 400))
+        img_exibida = ImageTk.PhotoImage(imagem)
+        painel_imagem.config(image=img_exibida)
+        painel_imagem.image = img_exibida
+        texto_extraido = extrair_texto(caminho_imagem)
+        texto_traduzido = traduzir_texto(texto_extraido)
+        resultado_traducao.config(text=f"Texto Traduzido:\n{texto_traduzido}")
 
-        self.label = tk.Label(master, text="Selecione a área da tela")
-        self.label.pack()
+# Função para extrair texto da imagem
+def extrair_texto(caminho_imagem):
+    imagem = Image.open(caminho_imagem)
+    texto = pytesseract.image_to_string(imagem)
+    return texto
 
-        self.canvas = tk.Canvas(master, bg='white', width=800, height=600)
-        self.canvas.pack()
+# Função para traduzir o texto para português
+def traduzir_texto(texto):
+    tradutor = Translator()
+    traducao = tradutor.translate(texto, dest='pt')
+    return traducao.text
 
-        self.canvas.bind("<ButtonPress-1>", self.start_selection)
-        self.canvas.bind("<B1-Motion>", self.update_selection)
-        self.canvas.bind("<ButtonRelease-1>", self.end_selection)
+# Configuração da janela principal
+janela = tk.Tk()
+janela.title("App de Tradução de Imagens")
+janela.geometry("500x600")
 
-        self.rect = None
-        self.start_x = None
-        self.start_y = None
+# Botão para carregar imagem
+botao_carregar = tk.Button(janela, text="Carregar Imagem", command=abrir_imagem)
+botao_carregar.pack(pady=10)
 
-    def start_selection(self, event):
-        self.start_x = event.x
-        self.start_y = event.y
-        self.rect = self.canvas.create_rectangle(self.start_x, self.start_y, self.start_x, self.start_y, outline='red')
+# Painel para exibir a imagem carregada
+painel_imagem = tk.Label(janela)
+painel_imagem.pack()
 
-    def update_selection(self, event):
-        self.canvas.coords(self.rect, self.start_x, self.start_y, event.x, event.y)
+# Label para exibir a tradução
+resultado_traducao = tk.Label(janela, text="", wraplength=400, justify="left")
+resultado_traducao.pack(pady=20)
 
-    def end_selection(self, event):
-        end_x, end_y = event.x, event.y
-        self.capture_and_translate(self.start_x, self.start_y, end_x, end_y)
-
-    def capture_and_translate(self, x1, y1, x2, y2):
-        # Captura a área da tela
-        screenshot = pyautogui.screenshot(region=(x1, y1, x2 - x1, y2 - y1))
-
-        # Converte a captura para um formato PIL
-        cropped_image = Image.fromarray(screenshot)
-
-        # Extrai texto da imagem recortada
-        text = pytesseract.image_to_string(cropped_image)
-
-        # Traduz o texto
-        translator = Translator()
-        try:
-            translation = translator.translate(text, dest='pt').text
-        except Exception as e:
-            translation = f"Erro na tradução: {e}"
-
-        # Atualiza a label com o texto extraído e sua tradução
-        self.label.config(text=f'Texto: {text.strip()}\nTradução: {translation.strip()}')
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = TradutorApp(root)
-    root.mainloop()
+# Inicia o loop da interface gráfica
+janela.mainloop()
